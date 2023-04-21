@@ -1,87 +1,89 @@
-import discord # Подключаем библиотеку
-import json
-import requests
+import discord
 from discord.ext import commands
+import logging
+import sqlite3
 
-intents = discord.Intents.default() # Подключаем "Разрешения"
+con = sqlite3.connect("../Dota-2-helper-bot/DotaHelper.db")
+cur = con.cursor()
+logger = logging.getLogger('discord')
+logger.setLevel(logging.DEBUG)
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
+
+intents = discord.Intents.default()
+intents.members = True
 intents.message_content = True
-# Задаём префикс и интенты
+
 bot = commands.Bot(command_prefix='>', intents=intents)
 
-# С помощью декоратора создаём первую команду
 @bot.command()
-async def Pudge_basic(ctx):
-    await  ctx.send('Pudge')
-    await ctx.send("https://s1.1zoom.ru/big0/97/DOTA_2_Pudge_Monsters_Battle_axes_578916_1280x720.jpg")
-    await ctx.send('''На полях Вечной бойни, далеко на юге от Квойджа, тучная фигура упорно трудится под покровом ночи — 
-    расчленяет и потрошит павших, сгружая в кучи их конечности и потроха, — чтобы к рассвету поле боя было чисто. 
-    В этом проклятом мире ничто не разлагается само по себе — мертвецам не суждено вернуться обратно в землю, 
-    и не важно, насколько глубока могила. 
-    Окружённый стаями птиц-падальщиков, каждая из которых ждёт своего кусочка мёртвой плоти, мясник упражняется с лезвиями, 
-    и с каждым движением они становятся лишь острее. Вжик-вжик-тук. 
-    Плоть отсекается от костей, связки и сухожилия разрываются как мокрая бумага. 
-    И хоть мясницкое ремесло всегда было по вкусу тучному здоровяку, с годами у него проснулся интерес ещё и к тому, 
-    что остаётся после его работы. 
-    Сначала кусочек мускула там, потом глоточек крови здесь... 
-    Вскоре он впивался в самые крепкие тела подобно грызущей кость собаке. 
-    Даже те, кто не питают страха перед жнецом Смерти, предпочитают не связываться с мясником. 
-    ЕЩЁ КОМАНДЫ ДЛЯ ПЕРСОНАЖА: >Spells_pudge''')
+async def info(ctx, *, text):
+    x = 'SELECT info FROM Heroes WHERE hero like "%' + text + '%"'
+    result = cur.execute(x).fetchall()
+    await ctx.send(str(*result)[2:-3].replace(r'\r\n','\r\n'))
 
 @bot.command()
-async def Spells_pudge(ctx):
-    await ctx.send("1)MEAT HOOK")
-    await ctx.send("https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/abilities/pudge_meat_hook.png")
-    await ctx.send('''Бросает окровавленный крюк в указанную цель или в выбранном направлении. 
-    Крюк зацепится за первое существо, в которое попадёт, и притащит его к владельцу способности. 
-    Вражеские герои получают от крюка урон, а крипы, не являющиеся древними, сразу погибают.''')
-    await ctx.send('''СПОСОБНОСТЬ: направленная на точку
-            ТИП УРОНА: чистый
-            СКВОЗЬ НЕВОСПР. К МАГИИ: да
-            УРОН: 150.0 / 220.0 / 290.0 / 360.0
-            ДАЛЬНОСТЬ ПРИМЕНЕНИЯ: 1300.0''')
-    await ctx.send("2)ROT")
-    await ctx.send("https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/abilities/pudge_rot.png")
-    await ctx.send('''Ядовитое облако, которое замедляет врагов и наносит значительный урон как им, 
-                    так и владельцу способности.''')
-    await ctx.send('''СПОСОБНОСТЬ: ненаправленная
-                        ТИП УРОНА: магический
-                        СКВОЗЬ НЕВОСПР. К МАГИИ: нет
-                        РАДИУС: 250.0
-                        ЗАМЕДЛЕНИЕ ПЕРЕДВИЖЕНИЯ: -14.0% / -20.0% / -26.0% / -32.0%
-                        УРОН: 30.0 / 60.0 / 90.0 / 120.0
-                        ДОПОЛНИТЕЛЬНЫЙ УРОН: 95.0
-                        ДОПОЛНИТЕЛЬНЫЙ РАДИУС: 200.0
-                        СНИЖЕНИЕ ВОССТ. ЗДОРОВЬЯ: 25.0%''')
+async def conterpick(ctx, *, text):
+    x = 'SELECT conterpick FROM Heroes WHERE hero like "%' + text + '%"'
+    result = cur.execute(x).fetchall()
+    await ctx.send(str(*result)[2:-3].replace(r'\r\n','\r\n'))
 
-    await ctx.send("3)FLESH HEAP")
-    await ctx.send("https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/abilities/pudge_flesh_heap.png")
-    await ctx.send('''Временно блокирует часть любого урона, наносимого владельцу. 
-                    Способность также пассивно даёт дополнительную силу за каждого убитого или погибшего поблизости вражеского героя. 
-                    Эффекты накапливаются с начала игры, но герой получит силу только после изучения способности.''')
-    await ctx.send('''СПОСОБНОСТЬ: ненаправленная
-                        МОЖНО РАЗВЕЯТЬ: нет
-                        БЛОК УРОНА: 8.0 / 14.0 / 20.0 / 26.0
-                        ДОП. СИЛА: 1.1 / 1.4 / 1.7 / 2.0
-                        РАДИУС: 450.0
-                        ДЛИТЕЛЬНОСТЬ: 5.0 / 6.0 / 7.0 / 8.0''')
+@bot.command()
+async def builds(ctx, *, text):
+    x = 'SELECT builds FROM Heroes WHERE hero like "%' + text + '%"'
+    result = cur.execute(x).fetchall()
+    result = str(*result)[2:-3]
+    await ctx.send(result.replace(r'\r\n','\r\n'))
 
-    await ctx.send("4)DISMEMBER")
-    await ctx.send("https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/abilities/pudge_dismember.png")
-    await ctx.send('''ПРЕРЫВАЕМАЯ — герой заживо пожирает врага, оглушая его и нанося периодический урон, 
-                        который зависит от силы владельца способности и излечивает его на столько же, сколько наносит урона. 
-                        Жертва притягивается со скоростью 75.0 единиц в секунду, пока расстояние не сократится до 125.0 единиц. 
-                        На крипов действует дольше.''')
-    await ctx.send('''СПОСОБНОСТЬ: направленная на существо
-                        ДЕЙСТВУЕТ: на вражеских существ
-                        ТИП УРОНА: магический
-                        СКВОЗЬ НЕВОСПР. К МАГИИ: да
-                        МОЖНО РАЗВЕЯТЬ: сильным развеиванием
-                        УРОН В СЕКУНДУ: 80.0 / 100.0 / 120.0
-                        МНОЖИТЕЛЬ СИЛЫ: 0.3 / 0.6 / 0.9
-                        ДЛИТЕЛЬНОСТЬ НА КРИПАХ: 6.0
-                        ЛЕЧЕНИЕ ОТ МАКС. ЗДОРОВЬЯ: 5.0%
-                        ДАЛЬНОСТЬ ПРИМЕНЕНИЯ НА СОЮЗНИКОВ: 300.0
-                        УМЕНЬШЕНИЕ ПЕРЕЗАРЯДКИ: 5.0
-                        ДЛИТЕЛЬНОСТЬ: 3.0''')
+@bot.command()
+async def story(ctx, *, text):
+    x = 'SELECT story FROM Heroes WHERE hero like "%' + text + '%"'
+    result = cur.execute(x).fetchall()
+    await ctx.send(str(*result)[2:-3].replace(r'\r\n','\r\n'))
 
-bot.run('MTA4OTE0MDM3MjAxMTIyOTIzNQ.GDqUEX.NPUY2RGrXGLUU3ICflw_AwHdJ9pif-uZAwP37k')
+@bot.command()
+async def spells(ctx, *, text):
+    x = 'SELECT spells FROM Heroes WHERE hero like "%' + text + '%"'
+    result = cur.execute(x).fetchall()
+    await ctx.send(str(*result)[2:len(str(*result)) // 2].replace(r'\r\n','\r\n'))
+    await ctx.send(str(*result)[len(str(*result)) // 2:-2].replace(r'\r\n','\r\n'))
+
+@bot.command()
+async def item(ctx, *, text):
+    x = 'SELECT description FROM Items WHERE name like "%' + text + '%"'
+    result = cur.execute(x).fetchall()
+    await ctx.send(str(*result)[2:-3].replace(r'\r\n','\r\n'))
+
+@bot.command()
+async def commands(ctx):
+    await ctx.send(">info (имя героя) - информация о герое")
+    await ctx.send(">counterpick (имя героя) - контрпик героя")
+    await ctx.send(">builds (имя героя) - предметы на героя")
+    await ctx.send(">story (имя героя) - история героя")
+    await ctx.send(">spells (имя героя) - способности героя")
+    await ctx.send(">description (имя героя) - информация о герое")
+    await ctx.send(">item (название предмета) - информация о предмете")
+    await ctx.send(">guide_lines - информация о линиях в доте")
+    await ctx.send(">guide_main - общая информация о доте")
+
+
+@bot.command()
+async def guide_lines(ctx):
+    await ctx.send("В доте есть 3 линии: легкая, ценртальная, тяжелая")
+    await ctx.send("На легкой и тяжелой линии стоит по два игрока, а на центральной один игрок")
+    await ctx.send("На легкой стоит полная поддержка(пятая позиция) и керри(первая позиция).")
+    await ctx.send("На тяжелой стоит частичная поддержка(четвертая позиция) и офлейнер(третья позиция).")
+    await ctx.send("На миду - мидер(вторая позиция).")
+
+@bot.command()
+async def guide_main(ctx):
+    await ctx.send("В доте матчи проходят 5 на 5")
+    await ctx.send("Полная поддержка - сильный герой в начале, который помогает своему керри развиться.")
+    await ctx.send("Частичная поддержка - герой сильный в начале, середине игры.Она помогает всем линиям.")
+    await ctx.send("Офлейнер - герой который зачастую начинает драки, сильный в середине или конце игры.")
+    await ctx.send("Мидер - герой который силен в середине и конце игры.Помогает в начале другим линиям, а далее ходит вместе с командой.")
+    await ctx.send("Керри - герой способный зарабатывать много золота, из-за чего ближе к концу игры становиться главным звеном команды")
+
+
+bot.run('MTA4OTE0MDM3MjAxMTIyOTIzNQ.GpfhRa.E28ifF5M8KIN3z0ovfVIR2ukXv8cc3iDpiyOM0')
