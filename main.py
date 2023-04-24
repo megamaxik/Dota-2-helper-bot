@@ -149,4 +149,4 @@ async def game_bones(ctx, *, text):
             'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhdDbF7v5HKqcKlrP-ideH6XwD3SIqUmjV1Q&usqp=CAU')
 
 
-bot.run('MTA4OTE0MDM3MjAxMTIyOTIzNQ.GBXtyv.qvG1PDYPdQf1ZfXBGQmj3S2wood-d_TDMhlyLk')
+bot.run('MTA4OTE0MDM3MjAxMTIyOTIzNQ.GrudAm.3VgUTMmS6HV1w9_D2F3klQ0SNHJ_sGT5F3-Ibw')
